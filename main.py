@@ -1,16 +1,37 @@
-# This is a sample Python script.
-
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
-
-
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+from langchain_community.vectorstores import Qdrant
+from langchain_community.embeddings import HuggingFaceBgeEmbeddings
+from langchain_community.document_loaders import PyPDFLoader
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
+loader = PyPDFLoader("data.pdf")
+documents = loader.load()
+text_splitter = RecursiveCharacterTextSplitter(
+    chunk_size= 500,
+    chunk_overlap= 50
+)
+texts = text_splitter.split_documents(documents)
+model_name = "BAAI/bge-large-en"
+model_kwargs = {
+    'device': 'cpu'
+}
+encode_kwargs = {
+    'normalize_embeddings': False
+}
+embeddings = HuggingFaceBgeEmbeddings(
+    model_kwargs=model_kwargs,
+    model_name=model_name,
+    encode_kwargs=encode_kwargs
+)
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+url="https://309e7711-786b-4c2c-aa32-6fff465f6bf9.us-east4-0.gcp.cloud.qdrant.io:6333",
+api_key="481cCVm0Ks14GPiWtcjv9zWFsNreetkCjdBcUg3X19_IaxiG80756w",
+collection_name = "Gyber_db"
+
+qdrant = Qdrant.from_documents(
+    texts,
+    embeddings,
+    url=url,
+    prefer_grpc=False,
+    collection_name=collection_name
+)
